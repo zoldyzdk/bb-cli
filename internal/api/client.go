@@ -97,6 +97,31 @@ func (c *Client) Post(path string, body interface{}, target interface{}) error {
 	return c.do(req, target)
 }
 
+func (c *Client) GetRaw(path string) (string, error) {
+	req, err := c.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "text/plain")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("API error (%d): %s", resp.StatusCode, string(data))
+	}
+
+	return string(data), nil
+}
+
 type CurrentUser struct {
 	DisplayName string `json:"display_name"`
 	Username    string `json:"username"`

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/zoldyzdk/bb-cli/internal/models"
 )
@@ -10,8 +11,11 @@ func repoPath(workspace, repo string) string {
 	return fmt.Sprintf("/repositories/%s/%s", workspace, repo)
 }
 
-func (c *Client) ListPullRequests(workspace, repo, state string, limit int) ([]models.PullRequest, error) {
+func (c *Client) ListPullRequests(workspace, repo, state string, limit int, query string) ([]models.PullRequest, error) {
 	path := fmt.Sprintf("%s/pullrequests?state=%s&pagelen=%d", repoPath(workspace, repo), state, limit)
+	if query != "" {
+		path += "&q=" + url.QueryEscape(query)
+	}
 
 	var result models.PaginatedResponse[models.PullRequest]
 	if err := c.Get(path, &result); err != nil {

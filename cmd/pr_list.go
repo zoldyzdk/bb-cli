@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	prListState string
-	prListLimit int
+	prListState  string
+	prListLimit  int
+	prListAuthor string
 )
 
 var prListCmd = &cobra.Command{
@@ -27,6 +28,7 @@ func init() {
 	prCmd.AddCommand(prListCmd)
 	prListCmd.Flags().StringVar(&prListState, "state", "OPEN", "PR state filter: OPEN, MERGED, DECLINED, SUPERSEDED")
 	prListCmd.Flags().IntVar(&prListLimit, "limit", 25, "Maximum number of PRs to display")
+	prListCmd.Flags().StringVarP(&prListAuthor, "author", "A", "", "Filter by author nickname (use @me for yourself)")
 }
 
 func runPRList(cmd *cobra.Command, args []string) error {
@@ -44,7 +46,21 @@ func runPRList(cmd *cobra.Command, args []string) error {
 	}
 
 	client := api.NewClient(cfg.Username, cfg.Token)
-	prs, err := client.ListPullRequests(workspace, repo, prListState, prListLimit)
+
+	var query string
+	if prListAuthor != "" {
+		author := prListAuthor
+		if author == "@me" {
+			user, err := client.GetCurrentUser()
+			if err != nil {
+				return fmt.Errorf("failed to resolve @me: %w", err)
+			}
+			author = user.Nickname
+		}
+		query = fmt.Sprintf(`author.nickname="%s"`, author)
+	}
+
+	prs, err := client.ListPullRequests(workspace, repo, prListState, prListLimit, query)
 	if err != nil {
 		return fmt.Errorf("failed to list pull requests: %w", err)
 	}

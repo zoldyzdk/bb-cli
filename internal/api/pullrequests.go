@@ -57,3 +57,8 @@ func (c *Client) ListPullRequestComments(workspace, repo string, prID, limit int
 
 	return result.Values, nil
 }
+
+func (c *Client) GetPullRequestDiff(workspace, repo string, prID int) (string, error) {
+	path := fmt.Sprintf("%s/pullrequests/%d/diff", repoPath(workspace, repo), prID)
+	return c.GetRaw(path)
+}

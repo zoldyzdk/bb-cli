@@ -17,8 +17,8 @@ Add the binary to your PATH, or run it directly:
 
 ## 2. Create a Bitbucket API Token
 
-1. Go to [Bitbucket Settings > Personal access tokens](https://bitbucket.org/account/settings/app-passwords/)
-2. Click **Create token**
+1. Go to [Bitbucket Settings > Personal access tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Click **Create API token with scopes**
 3. Give it a name (e.g. `bb-cli`)
 4. Grant at least: **Pull requests: Read and write**
 5. Copy the token (you won't see it again)

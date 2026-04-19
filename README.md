@@ -2,6 +2,26 @@
 
 Get up and running with the Bitbucket CLI in a few minutes.
 
+## Install with Go
+
+Requires **Go 1.25** or newer (see `go.mod`).
+
+```bash
+go install github.com/zoldyzdk/bb-cli@latest
+```
+
+`@latest` resolves to the **highest semver tag** (`v*`) on this repository. To pin a release:
+
+```bash
+go install github.com/zoldyzdk/bb-cli@v0.1.0
+```
+
+Check the installed build:
+
+```bash
+bb version
+```
+
 ## 1. Build the CLI
 
 ```bash
@@ -100,6 +120,14 @@ If you're inside a repo with a Bitbucket remote (e.g. `git@bitbucket.org:workspa
 
 Shows your logged-in user and stored workspace/repo.
 
+## 7. Version
+
+```bash
+bb version
+```
+
+Prints the embedded module version, Go toolchain version, and VCS metadata when the binary was built with module information (for example via `go install`).
+
 ## Troubleshooting
 
 | Problem | Solution |
@@ -108,3 +136,4 @@ Shows your logged-in user and stored workspace/repo.
 | `workspace is required` | Use `--workspace` and `--repo`, or set them in config, or run from a Bitbucket git repo |
 | `API error (401)` | Token may be expired or revoked. Create a new token and run `bb auth login` again |
 | `API error (404)` | Check that workspace and repo names are correct (case-sensitive) |
+| `go install` errors about Go version | Upgrade Go to at least the version in this repo’s `go.mod` |

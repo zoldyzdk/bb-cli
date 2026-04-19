@@ -8,9 +8,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zoldyzdk/bb-cli/internal/api"
 	"github.com/zoldyzdk/bb-cli/internal/config"
+	"github.com/zoldyzdk/bb-cli/internal/models"
 )
 
 var prCommentsLimit int
+var prCommentsResolved bool
+var prCommentsUnresolved bool
 
 var prCommentsCmd = &cobra.Command{
 	Use:   "comments <pr-id>",
@@ -23,6 +26,8 @@ var prCommentsCmd = &cobra.Command{
 func init() {
 	prCmd.AddCommand(prCommentsCmd)
 	prCommentsCmd.Flags().IntVar(&prCommentsLimit, "limit", 50, "Maximum number of comments to display")
+	prCommentsCmd.Flags().BoolVar(&prCommentsResolved, "resolved", false, "Show only resolved comments")
+	prCommentsCmd.Flags().BoolVar(&prCommentsUnresolved, "unresolved", false, "Show only unresolved comments")
 }
 
 func runPRComments(cmd *cobra.Command, args []string) error {
@@ -48,6 +53,25 @@ func runPRComments(cmd *cobra.Command, args []string) error {
 	comments, err := client.ListPullRequestComments(workspace, repo, prID, prCommentsLimit)
 	if err != nil {
 		return fmt.Errorf("failed to list comments: %w", err)
+	}
+
+	// Filter by resolution status if flags are set (but not both)
+	if prCommentsResolved && !prCommentsUnresolved {
+		filtered := make([]models.Comment, 0)
+		for _, c := range comments {
+			if c.Resolution != nil {
+				filtered = append(filtered, c)
+			}
+		}
+		comments = filtered
+	} else if prCommentsUnresolved && !prCommentsResolved {
+		filtered := make([]models.Comment, 0)
+		for _, c := range comments {
+			if c.Resolution == nil {
+				filtered = append(filtered, c)
+			}
+		}
+		comments = filtered
 	}
 
 	if len(comments) == 0 {

@@ -60,6 +60,11 @@ func runPRComments(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
+		status := "OPEN"
+		if c.Resolution != nil {
+			status = "RESOLVED"
+		}
+
 		location := ""
 		if c.Inline != nil {
 			location = fmt.Sprintf(" [%s", c.Inline.Path)
@@ -69,7 +74,7 @@ func runPRComments(cmd *cobra.Command, args []string) error {
 			location += "]"
 		}
 
-		fmt.Printf("--- Comment #%d%s ---\n", c.ID, location)
+		fmt.Printf("--- Comment #%d [%s]%s ---\n", c.ID, status, location)
 		fmt.Printf("Author: %s\n", c.User.DisplayName)
 		fmt.Printf("Date:   %s\n", c.CreatedOn.Format("2006-01-02 15:04:05"))
 

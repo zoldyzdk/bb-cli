@@ -120,15 +120,22 @@ type CommentInline struct {
 	Path string `json:"path"`
 }
 
+type CommentResolution struct {
+	Type      string    `json:"type"`
+	User      User      `json:"user"`
+	CreatedOn time.Time `json:"created_on"`
+}
+
 type Comment struct {
-	ID        int            `json:"id"`
-	Content   CommentContent `json:"content"`
-	CreatedOn time.Time      `json:"created_on"`
-	UpdatedOn time.Time      `json:"updated_on"`
-	User      User           `json:"user"`
-	Inline    *CommentInline `json:"inline,omitempty"`
-	Parent    *Comment       `json:"parent,omitempty"`
-	Deleted   bool           `json:"deleted"`
+	ID         int                `json:"id"`
+	Content    CommentContent     `json:"content"`
+	CreatedOn  time.Time          `json:"created_on"`
+	UpdatedOn  time.Time          `json:"updated_on"`
+	User       User               `json:"user"`
+	Inline     *CommentInline     `json:"inline,omitempty"`
+	Parent     *Comment           `json:"parent,omitempty"`
+	Deleted    bool               `json:"deleted"`
+	Resolution *CommentResolution `json:"resolution,omitempty"`
 }
 
 type PaginatedResponse[T any] struct {

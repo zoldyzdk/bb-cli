@@ -126,7 +126,7 @@ Shows your logged-in user and stored workspace/repo.
 bb version
 ```
 
-Prints the embedded module version, Go toolchain version, and VCS metadata when the binary was built with module information (for example via `go install`).
+Prints the embedded module version, Go toolchain version, and VCS metadata when the binary was built with module information (for example via `go install`). The same output is shown for `bb --version` and `bb -v`.
 
 ## Troubleshooting
 

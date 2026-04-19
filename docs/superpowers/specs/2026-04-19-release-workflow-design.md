@@ -42,7 +42,7 @@ No artifact upload, Goreleaser, or Homebrew in scope unless added later.
 
 ### Behavior
 
-- New top-level command: **`bb version`** (alias **`bb --version`** is not required for this spec; only the subcommand).
+- Top-level **`bb version`** subcommand, plus **`bb --version`** and **`bb -v`** on the root command with identical output.
 - **No Bitbucket workspace/repo** required; it must not call `resolveWorkspaceAndRepo` or need credentials.
 - Version information comes from **`runtime/debug.ReadBuildInfo()`** so binaries built with **`go install`** embed module version, Go version, and (when available) VCS metadata from the build.
 
@@ -59,7 +59,7 @@ Exit code **0** on success. If **`ReadBuildInfo()`** returns `ok == false`, prin
 
 ### Flags
 
-None required for the initial implementation (**YAGNI**).
+The root command also supports **`bb --version`** and **`bb -v`** (Cobra’s default version flags when `Version` is set). They print the **same lines** as `bb version`, using build info captured at process start for the flag path and the same formatter for the subcommand.
 
 ## Testing and verification
 

@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"runtime/debug"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -16,12 +18,18 @@ var versionCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.Version = buildInfoText()
+	rootCmd.SetVersionTemplate("{{.Version}}\n")
 }
 
 func runVersion(cmd *cobra.Command, args []string) {
+	writeBuildInfo(cmd.OutOrStdout())
+}
+
+func writeBuildInfo(w io.Writer) {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		fmt.Println("bb: build information not available")
+		fmt.Fprintln(w, "bb: build information not available")
 		return
 	}
 
@@ -29,15 +37,21 @@ func runVersion(cmd *cobra.Command, args []string) {
 	if ver == "" {
 		ver = "unknown"
 	}
-	fmt.Printf("bb %s\n", ver)
-	fmt.Printf("go %s\n", bi.GoVersion)
+	fmt.Fprintf(w, "bb %s\n", ver)
+	fmt.Fprintf(w, "go %s\n", bi.GoVersion)
 
 	for _, s := range bi.Settings {
 		switch s.Key {
 		case "vcs.revision":
-			fmt.Printf("commit %s\n", s.Value)
+			fmt.Fprintf(w, "commit %s\n", s.Value)
 		case "vcs.time":
-			fmt.Printf("time %s\n", s.Value)
+			fmt.Fprintf(w, "time %s\n", s.Value)
 		}
 	}
+}
+
+func buildInfoText() string {
+	var b strings.Builder
+	writeBuildInfo(&b)
+	return strings.TrimSuffix(b.String(), "\n")
 }

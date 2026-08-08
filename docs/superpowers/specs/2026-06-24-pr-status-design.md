@@ -104,29 +104,37 @@ References:
 - Bitbucket Pull Requests REST API: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/
 - Bitbucket Branch Restrictions REST API: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-branch-restrictions/
 
+## Decisions
+
+Validated during design brainstorming (2026-08-08):
+
+- **Scope:** full v1 — all checks, branch-restriction inference, soft `UNKNOWN`, all flags, and `--json`.
+- **Structure:** Approach A — thin focused API methods; `cmd/pr_status.go` orchestrates fetch and builds the snapshot; `internal/status` owns evaluate + human/JSON formatting from day one.
+- **Not chosen:** API facade that returns a full status context; parallel fetch (`errgroup`) in v1.
+
 ## Internal Structure
 
 Follow the existing Cobra and API patterns:
 
-- Add `cmd/pr_status.go` for command registration, flags, API orchestration, and output formatting.
-- Extend `internal/api/pullrequests.go` with status-specific PR endpoints.
+- Add `cmd/pr_status.go` for command registration, flags, API orchestration, snapshot assembly, and exit-code handling. No readiness logic or formatting beyond calling `internal/status`.
+- Extend `internal/api/pullrequests.go` with status-specific PR endpoints (tasks, statuses, conflicts). Keep methods focused — no status orchestration in the API layer.
 - Add a branch restrictions API method, either in `internal/api/pullrequests.go` if kept small or in a focused `internal/api/branch_restrictions.go`.
 - Extend `internal/models/pullrequest.go` or add focused model files for tasks, build statuses, conflicts, branch restrictions, and optional mergeability fields.
-- Keep readiness evaluation in a small pure function or type so it can be unit-tested without Bitbucket credentials.
-
-If the evaluator grows beyond simple aggregation, move it to a focused package such as `internal/status`. The first implementation can keep it close to the command as long as the API-independent logic remains testable.
+- Add `internal/status` with pure types and functions: `Snapshot`, `Requirements`, `Check`, `Result`, `Evaluate`, `FormatHuman`, `FormatJSON`. No network and no Cobra dependencies.
 
 ## Data Flow
 
-1. Resolve workspace and repo using the existing resolution order.
+1. Resolve workspace and repo using the existing resolution order (flags → config → git remote).
 2. Load credentials using the existing config flow.
-3. Fetch the PR by ID.
-4. Fetch comments, tasks, statuses, conflicts, and branch restrictions.
-5. Convert Bitbucket responses into a small internal status snapshot.
-6. Resolve required thresholds from branch restrictions plus CLI overrides.
-7. Evaluate readiness into `READY`, `NOT READY`, or `UNKNOWN`.
-8. Render human output or JSON.
-9. Apply exit behavior. Default is `0` on command success; `--fail-on-not-ready` returns `1` for `NOT READY`.
+3. Hard-fetch the PR by ID (command fails if this fails).
+4. Fetch comments, tasks, statuses, conflicts, and branch restrictions. Optional endpoint or branch-restriction auth failures are soft errors.
+5. Convert Bitbucket responses into a small internal `Snapshot` (observed facts).
+6. Resolve `Requirements` from branch restrictions plus CLI overrides / ignore flags.
+7. `status.Evaluate(snapshot, requirements)` → per-check `OK|FAIL|UNKNOWN|INFO` and top-level `READY|NOT_READY|UNKNOWN`.
+8. Render via `FormatHuman` or `FormatJSON`.
+9. Apply exit behavior. Default is `0` on command success; `--fail-on-not-ready` returns `1` only for `NOT READY`.
+
+Ignore flags remove that category from readiness evaluation while still allowing observed facts to be printed when useful. No matching branch restriction for the destination branch means no inferred threshold for that category — that is not the same as unavailable and must not force `UNKNOWN`.
 
 ## Error Handling
 
@@ -172,13 +180,13 @@ Soft errors should appear as `[UNKNOWN]` lines and warnings in human output. The
 }
 ```
 
-JSON status values should be stable uppercase strings: `OK`, `FAIL`, `UNKNOWN`, and `INFO`.
+JSON status values should be stable uppercase strings: `OK`, `FAIL`, `UNKNOWN`, and `INFO`. Use `INFO` for observed facts that are not part of readiness (for example an ignored category still printed for context).
 
-JSON readiness values should be stable uppercase strings: `READY`, `NOT_READY`, and `UNKNOWN`.
+JSON readiness values should be stable uppercase strings: `READY`, `NOT_READY`, and `UNKNOWN`. Human output may show spaced labels (`NOT READY`); JSON always uses the underscore form.
 
 ## Testing
 
-Add focused tests for:
+Primary coverage lives in `internal/status` (no network):
 
 - Readiness evaluation for `READY`, `NOT READY`, and `UNKNOWN`.
 - Approval counting from `participants`.
@@ -190,7 +198,7 @@ Add focused tests for:
 - Human output for the three readiness states.
 - JSON output shape for scripts.
 
-Live Bitbucket API verification should stay manual because credentials, repository rules, and branch restriction permissions vary by workspace.
+Optional: decode fixtures for new API model types. Prefer testing evaluate/format over full Cobra e2e. Live Bitbucket API verification stays manual because credentials, repository rules, and branch restriction permissions vary by workspace.
 
 ## Non-Goals For V1
 

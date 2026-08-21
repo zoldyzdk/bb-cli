@@ -67,9 +67,9 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 	if resp.StatusCode >= 400 {
 		var apiErr models.APIError
 		if json.Unmarshal(data, &apiErr) == nil && apiErr.Error.Message != "" {
-			return fmt.Errorf("API error (%d): %s", resp.StatusCode, apiErr.Error.Message)
+			return &HTTPError{StatusCode: resp.StatusCode, Message: apiErr.Error.Message}
 		}
-		return fmt.Errorf("API error (%d): %s", resp.StatusCode, string(data))
+		return &HTTPError{StatusCode: resp.StatusCode, Message: string(data)}
 	}
 
 	if target != nil {

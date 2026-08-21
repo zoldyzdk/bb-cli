@@ -55,5 +55,3 @@ func TestCLIOverrides(t *testing.T) {
 		t.Fatalf("ignore builds should clear requirement, got %+v", req.SuccessfulBuilds)
 	}
 }
-
-func intPtr(v int) *int { return &v }

@@ -14,9 +14,9 @@ const (
 type ThresholdState int
 
 const (
-	ThresholdStateNone ThresholdState = iota // no requirement for this category
-	ThresholdStateValue                      // numeric requirement
-	ThresholdStateUnknown                    // could not evaluate requirement
+	ThresholdStateNone    ThresholdState = iota // no requirement for this category
+	ThresholdStateValue                         // numeric requirement
+	ThresholdStateUnknown                       // could not evaluate requirement
 )
 
 type Threshold struct {
@@ -31,23 +31,24 @@ func ThresholdValue(v int) Threshold {
 func ThresholdUnknown() Threshold { return Threshold{State: ThresholdStateUnknown} }
 
 type Snapshot struct {
-	ID                       int
-	Title                    string
-	State                    string
-	Draft                    bool
-	DestinationBranch        string
-	ApprovalCount            int
-	DefaultReviewerApprovals int
-	UnresolvedComments       int
-	OpenTasks                int
-	SuccessfulBuilds         int
-	ConflictCount            int
-	CommentsAvailable        bool
-	TasksAvailable           bool
-	BuildsAvailable          bool
-	ConflictsAvailable       bool
-	BranchRulesAvailable     bool
-	Warnings                 []string
+	ID                        int
+	Title                     string
+	State                     string
+	Draft                     bool
+	DestinationBranch         string
+	ApprovalCount             int
+	DefaultReviewerApprovals  int
+	UnresolvedComments        int
+	OpenTasks                 int
+	SuccessfulBuilds          int
+	ConflictCount             int
+	CommentsAvailable         bool
+	TasksAvailable            bool
+	BuildsAvailable           bool
+	ConflictsAvailable        bool
+	BranchRulesAvailable      bool
+	DefaultReviewersAvailable bool
+	Warnings                  []string
 }
 
 type Requirements struct {

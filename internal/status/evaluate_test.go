@@ -9,7 +9,7 @@ func baseSnapshot() Snapshot {
 		ApprovalCount:     2, DefaultReviewerApprovals: 1,
 		UnresolvedComments: 0, OpenTasks: 0, SuccessfulBuilds: 1, ConflictCount: 0,
 		CommentsAvailable: true, TasksAvailable: true, BuildsAvailable: true,
-		ConflictsAvailable: true, BranchRulesAvailable: true,
+		ConflictsAvailable: true, BranchRulesAvailable: true, DefaultReviewersAvailable: true,
 	}
 }
 
@@ -137,5 +137,49 @@ func TestEvaluateBuildsNoneDoesNotForceUnknown(t *testing.T) {
 	res := Evaluate(snap, req)
 	if res.Readiness != ReadinessReady {
 		t.Fatalf("got %s missing=%v", res.Readiness, res.Missing)
+	}
+}
+
+func TestEvaluateUnknownWhenDefaultReviewersUnavailable(t *testing.T) {
+	snap := baseSnapshot()
+	snap.DefaultReviewerApprovals = 0
+	snap.DefaultReviewersAvailable = false
+	req := Requirements{DefaultReviewerApprovals: ThresholdValue(1)}
+	res := Evaluate(snap, req)
+	if res.Readiness != ReadinessUnknown {
+		t.Fatalf("got %s missing=%v", res.Readiness, res.Missing)
+	}
+	found := false
+	for _, c := range res.Checks {
+		if c.Name != "default_reviewer_approvals" {
+			continue
+		}
+		found = true
+		if c.Status != CheckUnknown {
+			t.Fatalf("default_reviewer_approvals status %s", c.Status)
+		}
+	}
+	if !found {
+		t.Fatal("expected default_reviewer_approvals check")
+	}
+}
+
+func TestEvaluateDefaultReviewerApprovalsFailWhenAvailable(t *testing.T) {
+	snap := baseSnapshot()
+	snap.DefaultReviewerApprovals = 0
+	snap.DefaultReviewersAvailable = true
+	req := Requirements{DefaultReviewerApprovals: ThresholdValue(1)}
+	res := Evaluate(snap, req)
+	if res.Readiness != ReadinessNotReady {
+		t.Fatalf("got %s", res.Readiness)
+	}
+	found := false
+	for _, c := range res.Checks {
+		if c.Name == "default_reviewer_approvals" && c.Status == CheckFail {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("expected FAIL default_reviewer_approvals check")
 	}
 }

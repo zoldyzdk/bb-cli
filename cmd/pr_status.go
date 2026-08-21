@@ -109,6 +109,7 @@ func runPRStatus(cmd *cobra.Command, args []string) error {
 	}
 
 	defaultReviewers, err := client.ListDefaultReviewers(workspace, repo, pageLimit)
+	defaultReviewersOK := err == nil
 	if err != nil {
 		defaultReviewers = nil
 		if rulesOK {
@@ -116,7 +117,7 @@ func runPRStatus(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	snap := buildSnapshot(pr, comments, commentsOK, tasks, tasksOK, statuses, buildsOK, conflicts, conflictsOK, defaultReviewers, rulesOK, warnings)
+	snap := buildSnapshot(pr, comments, commentsOK, tasks, tasksOK, statuses, buildsOK, conflicts, conflictsOK, defaultReviewers, defaultReviewersOK, rulesOK, warnings)
 	overrides := buildOverrides(rulesOK)
 	req := status.InferRequirements(rules, pr.Destination.Branch.Name, overrides)
 	result := status.Evaluate(snap, req)
@@ -166,7 +167,7 @@ func countDefaultReviewerApprovals(participants []models.Participant, defaultRev
 func countUnresolved(comments []models.Comment) int {
 	n := 0
 	for _, c := range comments {
-		if !c.Deleted && c.Resolution == nil {
+		if !c.Deleted && c.Resolution == nil && c.Parent == nil {
 			n++
 		}
 	}
@@ -226,26 +227,28 @@ func buildSnapshot(
 	conflicts []models.FileConflict,
 	conflictsOK bool,
 	defaultReviewers []models.User,
+	defaultReviewersOK bool,
 	rulesOK bool,
 	warnings []string,
 ) status.Snapshot {
 	return status.Snapshot{
-		ID:                       pr.ID,
-		Title:                    pr.Title,
-		State:                    pr.State,
-		Draft:                    pr.Draft,
-		DestinationBranch:        pr.Destination.Branch.Name,
-		ApprovalCount:            countApprovals(pr.Participants),
-		DefaultReviewerApprovals: countDefaultReviewerApprovals(pr.Participants, defaultReviewers),
-		UnresolvedComments:       countUnresolved(comments),
-		OpenTasks:                countOpenTasks(tasks),
-		SuccessfulBuilds:         countSuccessfulBuilds(statuses),
-		ConflictCount:            len(conflicts),
-		CommentsAvailable:        commentsOK,
-		TasksAvailable:           tasksOK,
-		BuildsAvailable:          buildsOK,
-		ConflictsAvailable:       conflictsOK,
-		BranchRulesAvailable:     rulesOK,
-		Warnings:                 warnings,
+		ID:                        pr.ID,
+		Title:                     pr.Title,
+		State:                     pr.State,
+		Draft:                     pr.Draft,
+		DestinationBranch:         pr.Destination.Branch.Name,
+		ApprovalCount:             countApprovals(pr.Participants),
+		DefaultReviewerApprovals:  countDefaultReviewerApprovals(pr.Participants, defaultReviewers),
+		UnresolvedComments:        countUnresolved(comments),
+		OpenTasks:                 countOpenTasks(tasks),
+		SuccessfulBuilds:          countSuccessfulBuilds(statuses),
+		ConflictCount:             len(conflicts),
+		CommentsAvailable:         commentsOK,
+		TasksAvailable:            tasksOK,
+		BuildsAvailable:           buildsOK,
+		ConflictsAvailable:        conflictsOK,
+		BranchRulesAvailable:      rulesOK,
+		DefaultReviewersAvailable: defaultReviewersOK,
+		Warnings:                  warnings,
 	}
 }

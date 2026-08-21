@@ -73,6 +73,13 @@ func evaluateDefaultReviewerApprovals(snap Snapshot, req Requirements) (Check, b
 	if th.State == ThresholdStateNone && snap.DefaultReviewerApprovals == 0 {
 		return Check{}, false
 	}
+	if th.State != ThresholdStateNone && !snap.DefaultReviewersAvailable {
+		return Check{
+			Name:    "default_reviewer_approvals",
+			Status:  CheckUnknown,
+			Message: "default reviewers unavailable",
+		}, true
+	}
 	return evaluateThreshold(
 		"default_reviewer_approvals",
 		snap.DefaultReviewerApprovals,

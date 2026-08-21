@@ -9,7 +9,11 @@ func Evaluate(snapshot Snapshot, requirements Requirements) Result {
 	res.PullRequest.ID = snapshot.ID
 	res.PullRequest.Title = snapshot.Title
 	res.PullRequest.State = snapshot.State
-	res.Warnings = snapshot.Warnings
+	res.Missing = []string{}
+	res.Warnings = []string{}
+	if snapshot.Warnings != nil {
+		res.Warnings = snapshot.Warnings
+	}
 
 	res.Checks = append(res.Checks, evaluateState(snapshot))
 	res.Checks = append(res.Checks, evaluateDraft(snapshot))

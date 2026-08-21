@@ -24,6 +24,18 @@ func TestEvaluateReady(t *testing.T) {
 	if res.Readiness != ReadinessReady {
 		t.Fatalf("got %s missing=%v", res.Readiness, res.Missing)
 	}
+	if res.Missing == nil {
+		t.Fatal("Missing is nil, want empty slice")
+	}
+	if len(res.Missing) != 0 {
+		t.Fatalf("Missing: %v", res.Missing)
+	}
+	if res.Warnings == nil {
+		t.Fatal("Warnings is nil, want empty slice")
+	}
+	if len(res.Warnings) != 0 {
+		t.Fatalf("Warnings: %v", res.Warnings)
+	}
 }
 
 func TestEvaluateNotReady(t *testing.T) {

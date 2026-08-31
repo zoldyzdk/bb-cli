@@ -112,6 +112,16 @@ If you're inside a repo with a Bitbucket remote (e.g. `git@bitbucket.org:workspa
 ./bb pr comments 123 --limit 20
 ```
 
+### Check PR merge readiness
+
+```bash
+./bb pr status 123
+./bb pr status 123 --json
+./bb pr status 123 --required-approvals 2 --fail-on-not-ready
+```
+
+Reports whether a pull request looks ready to merge (approvals, comments, tasks, builds, conflicts). Infers thresholds from branch restrictions when permitted; use `--required-*` / `--ignore-*` to override.
+
 ## 6. Check Auth Status
 
 ```bash

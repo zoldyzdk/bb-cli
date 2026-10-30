@@ -2,6 +2,23 @@
 
 Get up and running with the Bitbucket CLI in a few minutes.
 
+## Private Hermes review pilot
+
+The local implementation adds `bb pr review <id>`, `bb pr review watch`, `bb pr review configure`, and `bb pr review token`. These commands use a separate repository access token with Bearer authentication and only make read requests to Bitbucket. They generate private Markdown/JSON reports and never publish comments, approve, or merge a PR.
+
+Configure the versioned review project first:
+
+```sh
+bb pr review configure --project-dir /path/to/hermes-code-review-agent
+bb pr review token --workspace my-workspace --repo my-repo
+bb pr review 123 --workspace my-workspace --repo my-repo
+bb pr review watch
+```
+
+The token command prompts for hidden input and stores it in `~/.config/bb-cli/review.json` with mode `0600`. It does not fall back to the personal login used by other commands. Enroll repositories and install the isolated Hermes profile using the review project's README. The first monitoring cycle baselines existing PRs; subsequent cycles review newly observed open, non-draft PRs once. State and reports survive restarts. Manual reruns produce separate reports.
+
+Build from this checkout to use the unreleased review commands. `@latest` below only installs published releases.
+
 ## Install with Go
 
 Requires **Go 1.25** or newer (see `go.mod`).

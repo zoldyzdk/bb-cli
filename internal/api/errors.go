@@ -3,11 +3,13 @@ package api
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 type HTTPError struct {
 	StatusCode int
 	Message    string
+	RetryAfter time.Duration
 }
 
 func (e *HTTPError) Error() string {

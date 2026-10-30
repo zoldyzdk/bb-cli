@@ -42,6 +42,7 @@ type Repository struct {
 type Endpoint struct {
 	Branch     Branch      `json:"branch"`
 	Repository *Repository `json:"repository,omitempty"`
+	Commit     MergeCommit `json:"commit"`
 }
 
 type RenderedContent struct {
@@ -74,28 +75,28 @@ type Participant struct {
 }
 
 type PullRequest struct {
-	Type              string       `json:"type"`
-	ID                int          `json:"id"`
-	Title             string       `json:"title"`
-	Description       string       `json:"description"`
-	State             string       `json:"state"`
-	Author            User         `json:"author"`
-	Source            Endpoint     `json:"source"`
-	Destination       Endpoint     `json:"destination"`
-	MergeCommit       *MergeCommit `json:"merge_commit,omitempty"`
-	CommentCount      int          `json:"comment_count"`
-	TaskCount         int          `json:"task_count"`
-	CloseSourceBranch bool         `json:"close_source_branch"`
-	ClosedBy          *User        `json:"closed_by,omitempty"`
-	Reason            string       `json:"reason"`
-	CreatedOn         time.Time    `json:"created_on"`
-	UpdatedOn         time.Time    `json:"updated_on"`
-	Reviewers         []User       `json:"reviewers"`
+	Type              string        `json:"type"`
+	ID                int           `json:"id"`
+	Title             string        `json:"title"`
+	Description       string        `json:"description"`
+	State             string        `json:"state"`
+	Author            User          `json:"author"`
+	Source            Endpoint      `json:"source"`
+	Destination       Endpoint      `json:"destination"`
+	MergeCommit       *MergeCommit  `json:"merge_commit,omitempty"`
+	CommentCount      int           `json:"comment_count"`
+	TaskCount         int           `json:"task_count"`
+	CloseSourceBranch bool          `json:"close_source_branch"`
+	ClosedBy          *User         `json:"closed_by,omitempty"`
+	Reason            string        `json:"reason"`
+	CreatedOn         time.Time     `json:"created_on"`
+	UpdatedOn         time.Time     `json:"updated_on"`
+	Reviewers         []User        `json:"reviewers"`
 	Participants      []Participant `json:"participants"`
-	Links             PRLinks      `json:"links"`
-	Rendered          Rendered     `json:"rendered"`
-	Summary           Summary      `json:"summary"`
-	Draft             bool         `json:"draft"`
+	Links             PRLinks       `json:"links"`
+	Rendered          Rendered      `json:"rendered"`
+	Summary           Summary       `json:"summary"`
+	Draft             bool          `json:"draft"`
 }
 
 type CreatePullRequestBody struct {

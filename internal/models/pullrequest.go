@@ -74,38 +74,47 @@ type Participant struct {
 }
 
 type PullRequest struct {
-	Type              string       `json:"type"`
-	ID                int          `json:"id"`
-	Title             string       `json:"title"`
-	Description       string       `json:"description"`
-	State             string       `json:"state"`
-	Author            User         `json:"author"`
-	Source            Endpoint     `json:"source"`
-	Destination       Endpoint     `json:"destination"`
-	MergeCommit       *MergeCommit `json:"merge_commit,omitempty"`
-	CommentCount      int          `json:"comment_count"`
-	TaskCount         int          `json:"task_count"`
-	CloseSourceBranch bool         `json:"close_source_branch"`
-	ClosedBy          *User        `json:"closed_by,omitempty"`
-	Reason            string       `json:"reason"`
-	CreatedOn         time.Time    `json:"created_on"`
-	UpdatedOn         time.Time    `json:"updated_on"`
-	Reviewers         []User       `json:"reviewers"`
+	Type              string        `json:"type"`
+	ID                int           `json:"id"`
+	Title             string        `json:"title"`
+	Description       string        `json:"description"`
+	State             string        `json:"state"`
+	Author            User          `json:"author"`
+	Source            Endpoint      `json:"source"`
+	Destination       Endpoint      `json:"destination"`
+	MergeCommit       *MergeCommit  `json:"merge_commit,omitempty"`
+	CommentCount      int           `json:"comment_count"`
+	TaskCount         int           `json:"task_count"`
+	CloseSourceBranch bool          `json:"close_source_branch"`
+	ClosedBy          *User         `json:"closed_by,omitempty"`
+	Reason            string        `json:"reason"`
+	CreatedOn         time.Time     `json:"created_on"`
+	UpdatedOn         time.Time     `json:"updated_on"`
+	Reviewers         []User        `json:"reviewers"`
 	Participants      []Participant `json:"participants"`
-	Links             PRLinks      `json:"links"`
-	Rendered          Rendered     `json:"rendered"`
-	Summary           Summary      `json:"summary"`
-	Draft             bool         `json:"draft"`
+	Links             PRLinks       `json:"links"`
+	Rendered          Rendered      `json:"rendered"`
+	Summary           Summary       `json:"summary"`
+	Draft             bool          `json:"draft"`
+}
+
+// CreatePullRequestEndpoint is the create-request shape for source and destination.
+// Commit is a pointer so an unset hash is omitted. A MergeCommit value with omitempty
+// still encodes {"hash":""}, which Bitbucket rejects as a missing changeset.
+type CreatePullRequestEndpoint struct {
+	Branch     Branch       `json:"branch"`
+	Commit     *MergeCommit `json:"commit,omitempty"`
+	Repository *Repository  `json:"repository,omitempty"`
 }
 
 type CreatePullRequestBody struct {
-	Title             string    `json:"title"`
-	Description       string    `json:"description,omitempty"`
-	Source            Endpoint  `json:"source"`
-	Destination       *Endpoint `json:"destination,omitempty"`
-	CloseSourceBranch bool      `json:"close_source_branch,omitempty"`
-	Reviewers         []User    `json:"reviewers,omitempty"`
-	Draft             bool      `json:"draft,omitempty"`
+	Title             string                     `json:"title"`
+	Description       string                     `json:"description,omitempty"`
+	Source            CreatePullRequestEndpoint  `json:"source"`
+	Destination       *CreatePullRequestEndpoint `json:"destination,omitempty"`
+	CloseSourceBranch bool                       `json:"close_source_branch,omitempty"`
+	Reviewers         []User                     `json:"reviewers,omitempty"`
+	Draft             bool                       `json:"draft,omitempty"`
 }
 
 type CommentContent struct {
@@ -149,7 +158,8 @@ type PaginatedResponse[T any] struct {
 
 type APIError struct {
 	Error struct {
-		Message string `json:"message"`
-		Detail  string `json:"detail,omitempty"`
+		Message string              `json:"message"`
+		Detail  string              `json:"detail,omitempty"`
+		Fields  map[string][]string `json:"fields,omitempty"`
 	} `json:"error"`
 }

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/zoldyzdk/bb-cli/internal/models"
@@ -67,7 +69,7 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 	if resp.StatusCode >= 400 {
 		var apiErr models.APIError
 		if json.Unmarshal(data, &apiErr) == nil && apiErr.Error.Message != "" {
-			return &HTTPError{StatusCode: resp.StatusCode, Message: apiErr.Error.Message}
+			return &HTTPError{StatusCode: resp.StatusCode, Message: formatAPIError(apiErr)}
 		}
 		return &HTTPError{StatusCode: resp.StatusCode, Message: string(data)}
 	}
@@ -79,6 +81,25 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 	}
 
 	return nil
+}
+
+func formatAPIError(apiErr models.APIError) string {
+	msg := apiErr.Error.Message
+	if len(apiErr.Error.Fields) == 0 {
+		return msg
+	}
+
+	keys := make([]string, 0, len(apiErr.Error.Fields))
+	for key := range apiErr.Error.Fields {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		parts = append(parts, key+": "+strings.Join(apiErr.Error.Fields[key], ", "))
+	}
+	return msg + " (" + strings.Join(parts, "; ") + ")"
 }
 
 func (c *Client) Get(path string, target interface{}) error {

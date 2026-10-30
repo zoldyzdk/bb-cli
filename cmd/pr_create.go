@@ -56,7 +56,7 @@ func runPRCreate(cmd *cobra.Command, args []string) error {
 
 	body := &models.CreatePullRequestBody{
 		Title: prCreateTitle,
-		Source: models.Endpoint{
+		Source: models.CreatePullRequestEndpoint{
 			Branch: models.Branch{Name: prCreateSource},
 		},
 		Description:       prCreateDescription,
@@ -65,7 +65,7 @@ func runPRCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	if prCreateDestination != "" {
-		body.Destination = &models.Endpoint{
+		body.Destination = &models.CreatePullRequestEndpoint{
 			Branch: models.Branch{Name: prCreateDestination},
 		}
 	}
